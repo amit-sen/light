@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Calculation</title>
+</head>
+
+<body>
+    <center>
+        <br>
+        <br>
+        <br>
+        <h1>Light Calculation</h1>
+        <input type="text" id="key" placeholder="Key Light Value">
+        <br>
+        <br>
+        <input type="text" id="fill" placeholder="Fill Light Value">
+        <br>
+        <br>
+        <input type="text" id="dr" placeholder="Dynamic Range">
+        <br>
+        <br>
+        <input type="text" id="filter" placeholder="Filter">
+        <br>
+        <br>
+        <input type="text" id="system" placeholder="System">
+        <br>
+        <br>
+        <button id="btn_1">Calculate</button>
+        <br>
+        <br>
+        <p id="error"></p>
+        <hr width="300px">
+        <p>Ratio : <span id="ratio"></span></p>
+        <p>F-Stop Difference : <span id="drR"></span></p>
+        <p>Shadow Should be : <span id="nR"></span></p>
+    </center>
+</body>
+<script>
+    var btn = document.querySelector('#btn_1');
+    var fstop = [1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22, 32];
+
+    btn.addEventListener('click', e => {
+        var keyValue = document.querySelector('#key').value;
+        var fillValue = document.querySelector('#fill').value;
+        var userDr = document.querySelector('#dr').value;
+
+        if (fstop.indexOf(Number(keyValue)) != -1 && fstop.indexOf(Number(fillValue)) != -1 && userDr <= 11) {
+
+            var keyFstop = fstop.indexOf(Number(keyValue));
+            var fillFstop = fstop.indexOf(Number(fillValue));
+
+            var dif = keyFstop - fillFstop
+            dif = Math.sqrt(dif * dif)
+
+            var ratio = document.querySelector('#ratio');
+            ratio.innerHTML = '1:' + Math.pow(2,dif);
+
+            var drR = document.querySelector('#drR');
+            drR.innerHTML = dif;
+
+            var nR = document.querySelector('#nR');
+            var newDif = Number(userDr)-1;
+            var newDif = Number(fstop[keyFstop + newDif]);
+
+            nR.innerHTML = 'F' + newDif;
+            
+        }
+
+        else {
+            var error = document.querySelector('#error');
+            error.innerHTML = 'incorrct input';
+
+            setTimeout( e =>{
+                error.innerHTML = '';
+                document.querySelector('#key').value = '';
+                document.querySelector('#fill').value = '';
+                document.querySelector('#dr').value = '';
+
+                document.querySelector('#ratio').innerHTML = '';
+                document.querySelector('#drR').innerHTML = '';
+                document.querySelector('#nR').innerHTML = '';
+            }, 1000)
+        }
+    })
+</script>
+
+</html>
