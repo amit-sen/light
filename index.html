@@ -5,86 +5,96 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Light Calculation</title>
+    <title>Fstop Calculation</title>
 </head>
 
-<body>
-    <center>
+<body style="font-family: Arial, Helvetica, sans-serif;">
+    <div style="  margin: auto;
+    width: fit-content;
+    padding: 10px;
+    text-align: center;
+    "
+    >
+        <br>
+        <h1>F-stop Calculation</h1>
+        <input type="number" id="key" placeholder="Key f-stop">
         <br>
         <br>
-        <h1>Light Calculation</h1>
-        <input type="text" id="key" placeholder="Key Light Value">
+        <input type="number" id="fill" placeholder="Fill f-stop">
         <br>
         <br>
-        <input type="text" id="fill" placeholder="Fill Light Value">
-        <br>
-        <br>
-        <input type="text" id="dr" placeholder="Dynamic Range">
-        <br>
-        <br>
-        <input type="text" id="filter" placeholder="Filter">
-        <br>
-        <br>
-        <input type="text" id="system" placeholder="System">
+        <input type="number" id="dr" placeholder="Dynamic Range">
         <br>
         <br>
         <button id="btn_1">Calculate</button>
         <br>
         <br>
-        <p id="error"></p>
         <hr width="300px">
         <p>Ratio : <span id="ratio"></span></p>
         <p>F-Stop Difference : <span id="drR"></span></p>
         <p>Shadow Should be : <span id="nR"></span></p>
-    </center>
+    </div>
 </body>
 <script>
     var btn = document.querySelector('#btn_1');
-    var fstop = [1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22, 32, 45, 64, 90, 128];
+    // var fstop = [1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22, 32, 45, 64, 90, 128];
 
     btn.addEventListener('click', e => {
-        var keyValue = document.querySelector('#key').value;
-        var fillValue = document.querySelector('#fill').value;
-        var userDr = document.querySelector('#dr').value;
+        var keyValue = Number(document.querySelector('#key').value);
+        var fillValue = Number(document.querySelector('#fill').value);
+        var userDr = Number(document.querySelector('#dr').value);
 
-        if (fstop.indexOf(Number(keyValue)) != -1 && fstop.indexOf(Number(fillValue)) != -1 && userDr <= fstop.length) {
+        var keyFstop = fstopCal(keyValue);
+        var fillFstop = fstopCal(fillValue);
 
-            var keyFstop = fstop.indexOf(Number(keyValue));
-            var fillFstop = fstop.indexOf(Number(fillValue));
+        var dif = keyFstop[0] - fillFstop[0]
+        dif = Math.sqrt(dif * dif)
 
-            var dif = keyFstop - fillFstop
-            dif = Math.sqrt(dif * dif)
+        var ratio = document.querySelector('#ratio');
+        ratio.innerHTML = '1:' + Math.pow(2, dif);
 
-            var ratio = document.querySelector('#ratio');
-            ratio.innerHTML = '1:' + Math.pow(2, dif);
+        var drR = document.querySelector('#drR');
+        drR.innerHTML = dif;
 
-            var drR = document.querySelector('#drR');
-            drR.innerHTML = dif;
-
-            var nR = document.querySelector('#nR');
-            var newDif = Number(userDr) - 1;
-            var newDif = Number(fstop[keyFstop + newDif]);
-
-            nR.innerHTML = 'F' + newDif;
-
+        var nR = document.querySelector('#nR');
+        var newDif = Number(userDr) - 1;
+        var newDif = Number(fstopPos(keyFstop[0] + newDif));
+        if (userDr != 0) {
+            nR.innerHTML = 'f/' + newDif;
+        } else {
+            nR.innerHTML = 'none';
         }
-
-        else {
-            var error = document.querySelector('#error');
-            error.innerHTML = 'incorrct input';
-
-            setTimeout(e => {
-                error.innerHTML = '';
-                document.querySelector('#key').value = '';
-                document.querySelector('#fill').value = '';
-                document.querySelector('#dr').value = '';
-
-                document.querySelector('#ratio').innerHTML = '';
-                document.querySelector('#drR').innerHTML = '';
-                document.querySelector('#nR').innerHTML = '';
-            }, 1000)
-        }
+        document.querySelector('#key').value = keyFstop[1]
+        document.querySelector('#fill').value = fillFstop[1]
     })
+
+    function fstopCal(F_user) {
+        var i = 0;
+        var F = 0;
+        for (i = -2; i < i + 1; i++) {
+            F = Math.pow(Math.sqrt(2), i);
+            F = F.toFixed(1);
+            // console.log("f/" + F);
+            // console.log("AV:" + i);
+            if (F == F_user || F > F_user) {
+                break;
+            }
+        }
+        var a = [];
+        a[0] = i;
+        a[1] = F;
+        return a;
+    }
+
+    function fstopPos(k) {
+        var i = 0;
+        var R = 0;
+        for (i = -2; i <= k; i++) {
+            R = Math.pow(Math.sqrt(2), i);
+            R = R.toFixed(1);
+        }
+        return R;
+    }
 </script>
 
 </html>
