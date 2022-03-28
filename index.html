@@ -13,8 +13,7 @@
     width: fit-content;
     padding: 10px;
     text-align: center;
-    "
-    >
+    ">
         <br>
         <h1>F-stop Calculation</h1>
         <input type="number" id="key" placeholder="Key f-stop">
@@ -47,8 +46,7 @@
         var keyFstop = fstopCal(keyValue);
         var fillFstop = fstopCal(fillValue);
 
-        var dif = keyFstop[0] - fillFstop[0]
-        dif = Math.sqrt(dif * dif)
+        var dif = Math.abs(keyFstop[0] - fillFstop[0])
 
         var ratio = document.querySelector('#ratio');
         ratio.innerHTML = '1:' + Math.pow(2, dif);
@@ -58,14 +56,14 @@
 
         var nR = document.querySelector('#nR');
         var newDif = Number(userDr) - 1;
-        var newDif = Number(fstopPos(keyFstop[0] + newDif));
-        if (userDr != 0) {
+
+        if (userDr != 0 && userDr < dif) {
             nR.innerHTML = 'f/' + newDif;
         } else {
             nR.innerHTML = 'none';
         }
-        document.querySelector('#key').value = keyFstop[1]
-        document.querySelector('#fill').value = fillFstop[1]
+        document.querySelector('#key').value = keyFstop[1];
+        document.querySelector('#fill').value = fillFstop[1];
     })
 
     function fstopCal(F_user) {
