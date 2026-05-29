@@ -1,98 +1,698 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fstop Calculation</title>
-</head>
-
-<body style="font-family: Arial, Helvetica, sans-serif;">
-    <div style="  margin: auto;
-    width: fit-content;
-    padding: 10px;
-    text-align: center;
-    ">
-        <br>
-        <h1>F-stop Calculation</h1>
-        <input type="number" id="key" placeholder="Key f-stop">
-        <br>
-        <br>
-        <input type="number" id="fill" placeholder="Fill f-stop">
-        <br>
-        <br>
-        <input type="number" id="dr" placeholder="Dynamic Range">
-        <br>
-        <br>
-        <button id="btn_1">Calculate</button>
-        <br>
-        <br>
-        <hr width="300px">
-        <p>Ratio : <span id="ratio"></span></p>
-        <p>F-Stop Difference : <span id="drR"></span></p>
-        <p>Shadow Should be : <span id="nR"></span></p>
-    </div>
-</body>
-<script>
-    var btn = document.querySelector('#btn_1');
-    // var fstop = [1, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, 22, 32, 45, 64, 90, 128];
-
-    btn.addEventListener('click', e => {
-        var keyValue = Number(document.querySelector('#key').value);
-        var fillValue = Number(document.querySelector('#fill').value);
-        var userDr = Number(document.querySelector('#dr').value);
-
-        var keyFstop = fstopCal(keyValue);
-        var fillFstop = fstopCal(fillValue);
-
-        var dif = Math.abs(keyFstop[0] - fillFstop[0])
-
-        var ratio = document.querySelector('#ratio');
-        ratio.innerHTML = '1:' + Math.pow(2, dif);
-
-        var drR = document.querySelector('#drR');
-        drR.innerHTML = dif;
-
-        var nR = document.querySelector('#nR');
-        var newDif = Number(userDr) - 1;
-
-        if (userDr != 0 && userDr < dif) {
-            nR.innerHTML = 'f/' + newDif;
-        } else {
-            nR.innerHTML = 'You are safe!';
+    <title>F-stop & Light Distance Calculator</title>
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-primary: #6366f1; /* Indigo */
+            --accent-secondary: #06b6d4; /* Cyan */
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+            --accent-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --shadow-primary: rgba(0, 0, 0, 0.4);
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
-        document.querySelector('#key').value = keyFstop[1];
-        document.querySelector('#fill').value = fillFstop[1];
-    })
 
-    function fstopCal(F_user) {
-        var i = 0;
-        var F = 0;
-        for (i = -2; i < i + 1; i++) {
-            F = Math.pow(Math.sqrt(2), i);
-            F = F.toFixed(1);
-            // console.log("f/" + F);
-            // console.log("AV:" + i);
-            if (F == F_user || F > F_user) {
-                break;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 2rem 1rem;
+        }
+
+        /* Animated background glow */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            top: -100px;
+            left: -100px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            bottom: -150px;
+            right: -150px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Split columns */
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 850px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
             }
         }
-        var a = [];
-        a[0] = i;
-        a[1] = F;
-        return a;
-    }
 
-    function fstopPos(k) {
-        var i = 0;
-        var R = 0;
-        for (i = -2; i <= k; i++) {
-            R = Math.pow(Math.sqrt(2), i);
-            R = R.toFixed(1);
+        /* Glassmorphic Card */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2.25rem;
+            box-shadow: 0 10px 30px var(--shadow-primary);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
         }
-        return R;
-    }
-</script>
 
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffffff;
+        }
+
+        .card-title span {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Input Group styling */
+        .input-group {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-wrapper span.unit-tag {
+            position: absolute;
+            right: 12px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            pointer-events: none;
+            font-weight: 500;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(10, 15, 30, 0.5);
+            border: 1.5px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-main);
+            outline: none;
+        }
+
+        input[type="number"]:focus, select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+            background: rgba(10, 15, 30, 0.8);
+        }
+
+        input::placeholder {
+            color: rgba(156, 163, 175, 0.4);
+        }
+
+        /* Select styling override */
+        select {
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 2.5rem;
+        }
+
+        /* Buttons styling */
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--accent-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Divider line */
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--card-border);
+            margin: 1.75rem 0;
+        }
+
+        /* Results Panel */
+        .results-panel {
+            background: rgba(10, 15, 30, 0.4);
+            border-radius: 14px;
+            padding: 1.25rem;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .result-label {
+            color: var(--text-secondary);
+        }
+
+        .result-value {
+            font-weight: 600;
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+        }
+
+        /* Dynamic badge indicators */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-safe {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-warn {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .formula-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 1rem;
+            line-height: 1.4;
+            font-style: italic;
+        }
+
+        footer {
+            margin-top: 3rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        footer a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>F-stop & Light Calculator</h1>
+            <p class="subtitle">A precision tool for determining photographic lighting ratios, dynamic range safety boundaries, and physical light source distances.</p>
+        </header>
+
+        <div class="calculator-grid">
+            <!-- Panel 1: Lighting Ratio & Dynamic Range -->
+            <div class="card">
+                <div class="card-title">
+                    <span>⚡</span> Lighting Ratio & Contrast
+                </div>
+
+                <div class="input-group">
+                    <label for="key">Key Light (f-stop)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="key" step="0.1" placeholder="e.g. 5.6" min="0.5">
+                        <span class="unit-tag">f/</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="fill">Fill Light (f-stop)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="fill" step="0.1" placeholder="e.g. 2.8" min="0.5">
+                        <span class="unit-tag">f/</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dr">Camera Dynamic Range (Stops)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="dr" step="0.5" placeholder="e.g. 5.0" min="0">
+                        <span class="unit-tag">stops</span>
+                    </div>
+                </div>
+
+                <button id="btn_1">Calculate Ratio</button>
+
+                <hr>
+
+                <div class="results-panel">
+                    <div class="result-row">
+                        <span class="result-label">Lighting Ratio:</span>
+                        <span class="result-value" id="ratio">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Exposure Difference:</span>
+                        <span class="result-value" id="drR">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Dynamic Range Status:</span>
+                        <span class="result-value" id="nR">—</span>
+                    </div>
+                </div>
+                
+                <div class="formula-info">
+                    Ratio is computed as 1:2<sup>&Delta;stops</sup> where &Delta;stops is the difference in exposure value.
+                </div>
+            </div>
+
+            <!-- Panel 2: Light Source Distance (Inverse Square Law) -->
+            <div class="card">
+                <div class="card-title">
+                    <span>📏</span> Light Source Distance
+                </div>
+
+                <div class="input-group">
+                    <label for="dist_key_fstop">Current Key Light (f-stop)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="dist_key_fstop" step="0.1" placeholder="e.g. 4.0" min="0.5">
+                        <span class="unit-tag">f/</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dist_curr_dist">Current Source Distance</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="dist_curr_dist" step="0.1" placeholder="e.g. 8.0" min="0.1">
+                        <span class="unit-tag" id="dist_curr_unit_tag">ft</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="dist_unit">Distance Units</label>
+                    <select id="dist_unit">
+                        <option value="ft">Feet (ft)</option>
+                        <option value="m">Meters (m)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="dist_target_fstop">Required Target Light (f-stop)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="dist_target_fstop" step="0.1" placeholder="e.g. 8.0" min="0.5">
+                        <span class="unit-tag">f/</span>
+                    </div>
+                </div>
+
+                <button id="btn_dist">Calculate Distance</button>
+
+                <hr>
+
+                <div class="results-panel">
+                    <div class="result-row">
+                        <span class="result-label">Required New Distance:</span>
+                        <span class="result-value" id="dist_result" style="color: var(--accent-secondary);">—</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Distance Change:</span>
+                        <span class="result-value" id="dist_change">—</span>
+                    </div>
+                </div>
+
+                <!-- Interactive SVG Line Draw View -->
+                <svg id="dist_svg" width="100%" height="130" viewBox="0 0 400 130" style="background: rgba(10, 15, 30, 0.45); border-radius: 14px; border: 1px solid var(--card-border); margin-top: 1rem; display: none;"></svg>
+
+                <div class="formula-info">
+                    Based on the Inverse Square Law: d<sub>target</sub> = d<sub>current</sub> &times; (f<sub>current</sub> / f<sub>target</sub>)
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Designed for cinematography, photography, and lighting design. Uses standard physical light meter equations.</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements - Panel 1
+        const btn1 = document.querySelector('#btn_1');
+        const keyInput = document.querySelector('#key');
+        const fillInput = document.querySelector('#fill');
+        const drInput = document.querySelector('#dr');
+        const ratioEl = document.querySelector('#ratio');
+        const drREl = document.querySelector('#drR');
+        const nREl = document.querySelector('#nR');
+
+        // DOM Elements - Panel 2
+        const btnDist = document.querySelector('#btn_dist');
+        const distKeyFstopInput = document.querySelector('#dist_key_fstop');
+        const distCurrDistInput = document.querySelector('#dist_curr_dist');
+        const distUnitSelect = document.querySelector('#dist_unit');
+        const distCurrUnitTag = document.querySelector('#dist_curr_unit_tag');
+        const distTargetFstopInput = document.querySelector('#dist_target_fstop');
+        const distResultEl = document.querySelector('#dist_result');
+        const distChangeEl = document.querySelector('#dist_change');
+
+        // Automatically sync Key input to Distance Key input for convenience
+        keyInput.addEventListener('input', (e) => {
+            if (!distKeyFstopInput.value) {
+                distKeyFstopInput.placeholder = e.target.value ? `e.g. ${e.target.value}` : 'e.g. 4.0';
+            }
+        });
+
+        // Update units dynamically when selected
+        distUnitSelect.addEventListener('change', (e) => {
+            distCurrUnitTag.textContent = e.target.value;
+        });
+
+        // Calculation: Lighting Ratio & Dynamic Range
+        btn1.addEventListener('click', () => {
+            const keyVal = parseFloat(keyInput.value);
+            const fillVal = parseFloat(fillInput.value);
+            const drVal = parseFloat(drInput.value) || 0;
+
+            if (isNaN(keyVal) || isNaN(fillVal) || keyVal <= 0 || fillVal <= 0) {
+                alert('Please enter valid positive f-stop values for Key and Fill light.');
+                return;
+            }
+
+            // Using pure logarithmic math to find precise stop values
+            // 2 * log2(f_stop) yields the stop value index.
+            const keyStops = 2 * Math.log2(keyVal);
+            const fillStops = 2 * Math.log2(fillVal);
+            const stopDifference = Math.abs(keyStops - fillStops);
+
+            // Display results
+            ratioEl.innerHTML = `1 : ${Math.pow(2, stopDifference).toFixed(1)}`;
+            drREl.innerHTML = `${stopDifference.toFixed(2)} stops`;
+
+            // Shadow dynamic range safety checks
+            if (drVal > 0) {
+                if (stopDifference <= drVal) {
+                    nREl.innerHTML = '<span class="badge badge-safe">You are safe!</span>';
+                } else {
+                    // Standard shadow recommendation calculation (adjusted based on dynamic range limit)
+                    const recommendedShadowIndex = keyStops - drVal;
+                    const recommendedFstop = Math.pow(2, recommendedShadowIndex / 2);
+                    nREl.innerHTML = `<span class="badge badge-warn">Clip warning! Min f/${recommendedFstop.toFixed(1)}</span>`;
+                }
+            } else {
+                nREl.innerHTML = '<span class="result-secondary">No limit set</span>';
+            }
+        });
+
+        // Calculation: Light Source Distance (Inverse Square Law)
+        btnDist.addEventListener('click', () => {
+            const currentF = parseFloat(distKeyFstopInput.value || keyInput.value);
+            const currentD = parseFloat(distCurrDistInput.value);
+            const targetF = parseFloat(distTargetFstopInput.value);
+            const unit = distUnitSelect.value;
+
+            if (isNaN(currentF) || isNaN(currentD) || isNaN(targetF) || currentF <= 0 || currentD <= 0 || targetF <= 0) {
+                alert('Please enter valid positive numbers for F-stops and Current Distance.');
+                return;
+            }
+
+            // Inverse square law: d_target = d_current * (f_current / f_target)
+            const targetD = currentD * (currentF / targetF);
+            const diffD = targetD - currentD;
+
+            // Display new distance
+            distResultEl.innerHTML = `${targetD.toFixed(2)} ${unit}`;
+
+            // Display physical translation needed
+            if (diffD > 0) {
+                distChangeEl.innerHTML = `Move light back by <b>${diffD.toFixed(2)} ${unit}</b>`;
+                distChangeEl.style.color = 'var(--warning-color)';
+            } else if (diffD < 0) {
+                distChangeEl.innerHTML = `Move light closer by <b>${Math.abs(diffD).toFixed(2)} ${unit}</b>`;
+                distChangeEl.style.color = 'var(--success-color)';
+            } else {
+                distChangeEl.innerHTML = `Keep light at current distance`;
+                distChangeEl.style.color = 'var(--text-secondary)';
+            }
+
+            // Render visual interactive diagram
+            drawDistanceDiagram(currentD, targetD, unit);
+        });
+
+        // SVG Drawing function for the line draw view
+        function drawDistanceDiagram(currentD, targetD, unit) {
+            const svg = document.querySelector('#dist_svg');
+            svg.style.display = 'block';
+            
+            const subjectX = 330;
+            const currentX = 170;
+            const baselineDist = 150; // pixels between current light and subject
+            
+            const ratio = targetD / currentD;
+            let targetX = subjectX - (baselineDist * ratio);
+            
+            // Clamp target position to keep it inside the SVG canvas boundaries (45 to 280)
+            let isClamped = false;
+            if (targetX < 45) {
+                targetX = 45;
+                isClamped = true;
+            } else if (targetX > 280) {
+                targetX = 280;
+                isClamped = true;
+            }
+            
+            const diffD = targetD - currentD;
+            const arrowColor = diffD > 0 ? 'var(--warning-color)' : 'var(--success-color)';
+            const isSame = Math.abs(diffD) < 0.001;
+
+            let html = '';
+            
+            // Grid baseline axis
+            html += `<line x1="20" y1="65" x2="380" y2="65" stroke="rgba(255,255,255,0.06)" stroke-width="2" />`;
+            
+            // Subject representation (vector persona contour)
+            html += `
+                <g transform="translate(${subjectX}, 65)">
+                    <circle cx="0" cy="0" r="15" fill="rgba(6, 182, 212, 0.15)" stroke="var(--accent-secondary)" stroke-width="2" />
+                    <circle cx="0" cy="-3" r="4" fill="var(--accent-secondary)" />
+                    <path d="M -7 9 A 7 7 0 0 1 7 9" fill="none" stroke="var(--accent-secondary)" stroke-width="2" />
+                    <text x="0" y="27" font-family="var(--font-main)" font-size="9" font-weight="600" fill="var(--text-secondary)" text-anchor="middle">Subject</text>
+                </g>
+            `;
+            
+            // Baseline Current Light
+            html += `
+                <g transform="translate(${currentX}, 65)">
+                    <circle cx="0" cy="0" r="13" fill="rgba(255, 255, 255, 0.08)" stroke="rgba(255, 255, 255, 0.4)" stroke-width="1.5" />
+                    <circle cx="0" cy="0" r="4" fill="rgba(255, 255, 255, 0.8)" />
+                    <line x1="0" y1="-19" x2="0" y2="-15" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.5" />
+                    <line x1="0" y1="15" x2="0" y2="19" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.5" />
+                    <line x1="-19" y1="0" x2="-15" y2="0" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.5" />
+                    <line x1="15" y1="0" x2="19" y2="0" stroke="rgba(255, 255, 255, 0.6)" stroke-width="1.5" />
+                    <text x="0" y="-24" font-family="var(--font-main)" font-size="9" fill="var(--text-secondary)" text-anchor="middle">Current</text>
+                </g>
+            `;
+
+            if (!isSame) {
+                // Target Light (Ghost dashed violet style)
+                html += `
+                    <g transform="translate(${targetX}, 65)">
+                        <circle cx="0" cy="0" r="13" fill="rgba(99, 102, 241, 0.15)" stroke="var(--accent-primary)" stroke-dasharray="3,3" stroke-width="2" />
+                        <circle cx="0" cy="0" r="4" fill="var(--accent-primary)" />
+                        <line x1="0" y1="-19" x2="0" y2="-15" stroke="var(--accent-primary)" stroke-width="1.5" />
+                        <line x1="0" y1="15" x2="0" y2="19" stroke="var(--accent-primary)" stroke-width="1.5" />
+                        <line x1="-19" y1="0" x2="-15" y2="0" stroke="var(--accent-primary)" stroke-width="1.5" />
+                        <line x1="15" y1="0" x2="19" y2="0" stroke="var(--accent-primary)" stroke-width="1.5" />
+                        <text x="0" y="-24" font-family="var(--font-main)" font-size="9" font-weight="600" fill="var(--accent-primary)" text-anchor="middle">Target</text>
+                    </g>
+                    
+                    <!-- Directional arrow -->
+                    <g>
+                        <path d="${getArrowPath(currentX, targetX, 65)}" fill="none" stroke="${arrowColor}" stroke-width="2" stroke-dasharray="3,2" marker-end="url(#arrow)" />
+                        <text x="${(currentX + targetX) / 2}" y="52" font-family="var(--font-main)" font-size="9" font-weight="700" fill="${arrowColor}" text-anchor="middle">
+                            ${diffD > 0 ? 'Move Back' : 'Move Closer'}
+                        </text>
+                    </g>
+                `;
+            }
+            
+            // Baseline Current Dimension line (drawn on bottom)
+            html += `
+                <g transform="translate(0, 105)">
+                    <line x1="${currentX}" y1="0" x2="${subjectX}" y2="0" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+                    <line x1="${currentX}" y1="-4" x2="${currentX}" y2="4" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+                    <line x1="${subjectX}" y1="-4" x2="${subjectX}" y2="4" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+                    <rect x="${(currentX + subjectX)/2 - 35}" y="-8" width="70" height="15" fill="#121824" rx="3" />
+                    <text x="${(currentX + subjectX)/2}" y="3" font-family="var(--font-mono)" font-size="9" fill="var(--text-secondary)" text-anchor="middle">
+                        ${currentD.toFixed(1)} ${unit}
+                    </text>
+                </g>
+            `;
+            
+            // Target Dimension line (drawn on top)
+            if (!isSame) {
+                html += `
+                    <g transform="translate(0, 22)">
+                        <line x1="${targetX}" y1="0" x2="${subjectX}" y2="0" stroke="var(--accent-primary)" stroke-width="1" stroke-opacity="0.4" />
+                        <line x1="${targetX}" y1="-4" x2="${targetX}" y2="4" stroke="var(--accent-primary)" stroke-width="1" stroke-opacity="0.4" />
+                        <line x1="${subjectX}" y1="-4" x2="${subjectX}" y2="4" stroke="var(--accent-primary)" stroke-width="1" stroke-opacity="0.4" />
+                        <rect x="${(targetX + subjectX)/2 - 35}" y="-8" width="70" height="15" fill="#121824" rx="3" />
+                        <text x="${(targetX + subjectX)/2}" y="3" font-family="var(--font-mono)" font-size="9" font-weight="600" fill="var(--accent-primary)" text-anchor="middle">
+                            ${targetD.toFixed(2)} ${unit}${isClamped ? '*' : ''}
+                        </text>
+                    </g>
+                `;
+            }
+            
+            // Marker definitions
+            html += `
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 2 L 8 5 L 0 8 z" fill="${arrowColor}" />
+                    </marker>
+                </defs>
+            `;
+
+            svg.innerHTML = html;
+        }
+
+        // Return path helper
+        function getArrowPath(startX, endX, y) {
+            const offset = 18; 
+            const dir = endX > startX ? 1 : -1;
+            const adjustedStart = startX + (offset * dir);
+            const adjustedEnd = endX - (offset * dir);
+            
+            if (Math.abs(adjustedEnd - adjustedStart) < 8) return '';
+            return `M ${adjustedStart} ${y} L ${adjustedEnd} ${y}`;
+        }
+    </script>
+</body>
 </html>
