@@ -345,7 +345,7 @@
             <!-- Panel 1: Lighting Ratio & Dynamic Range -->
             <div class="card">
                 <div class="card-title">
-                    <span>⚡</span> Lighting Ratio & Contrast
+                    Lighting Ratio & Contrast
                 </div>
 
                 <div class="input-group">
@@ -394,38 +394,60 @@
 
             </div>
 
-            <!-- Panel 2: Light Source Distance (Inverse Square Law) -->
+            <!-- Panel 2: Light Source Distance -->
             <div class="card">
                 <div class="card-title">
-                    <span>📏</span> Light Source Distance
+                    Light Source Distance
                 </div>
 
+                <!-- 1. Light watt & 3. Light intensity in percentage (Same Row) -->
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="dist_watt">Light watt</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="dist_watt" step="10" placeholder="e.g. 300" min="1" value="300">
+                            <span class="unit-tag">W</span>
+                        </div>
+                    </div>
+                    <div class="input-group" style="flex: 1.2;">
+                        <label for="dist_intensity">Light intensity %</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="dist_intensity" step="5" placeholder="e.g. 100" min="1" max="100" value="100">
+                            <span class="unit-tag">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Source distance & 5. Distance Units (Same Row) -->
+                <div style="display: flex; gap: 1rem; width: 100%;">
+                    <div class="input-group" style="flex: 2;">
+                        <label for="dist_curr_dist">Source distance</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="dist_curr_dist" step="0.1" placeholder="e.g. 8.0" min="0.1">
+                            <span class="unit-tag" id="dist_curr_unit_tag">ft</span>
+                        </div>
+                    </div>
+                    <div class="input-group" style="flex: 1.2;">
+                        <label for="dist_unit">Distance Units</label>
+                        <select id="dist_unit" style="padding-right: 2.25rem;">
+                            <option value="ft">Feet (ft)</option>
+                            <option value="m">Meters (m)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. Current Key Light (FStop) -->
                 <div class="input-group">
-                    <label for="dist_key_fstop">Current Key Light (f-stop)</label>
+                    <label for="dist_key_fstop">Current Key Light (FStop)</label>
                     <div class="input-wrapper">
                         <input type="number" id="dist_key_fstop" step="0.1" placeholder="e.g. 4.0" min="0.5">
                         <span class="unit-tag">f/</span>
                     </div>
                 </div>
 
+                <!-- 6. Required target Light (F Stop) -->
                 <div class="input-group">
-                    <label for="dist_curr_dist">Current Source Distance</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="dist_curr_dist" step="0.1" placeholder="e.g. 8.0" min="0.1">
-                        <span class="unit-tag" id="dist_curr_unit_tag">ft</span>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="dist_unit">Distance Units</label>
-                    <select id="dist_unit">
-                        <option value="ft">Feet (ft)</option>
-                        <option value="m">Meters (m)</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="dist_target_fstop">Required Target Light (f-stop)</label>
+                    <label for="dist_target_fstop">Required target Light (F Stop)</label>
                     <div class="input-wrapper">
                         <input type="number" id="dist_target_fstop" step="0.1" placeholder="e.g. 8.0" min="0.5">
                         <span class="unit-tag">f/</span>
@@ -447,10 +469,23 @@
                     </div>
                 </div>
 
+                <!-- Interactive Target Adjustments -->
+                <div id="target_adjusters" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--card-border); flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Target Wattage</span>
+                        <span id="target_watt_val" style="font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; color: var(--accent-primary);">300 W</span>
+                    </div>
+                    <input type="range" id="target_watt_slider" min="10" max="2000" step="10" value="300" style="width: 100%; accent-color: var(--accent-primary); cursor: pointer;">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Target Intensity</span>
+                        <span id="target_intensity_val" style="font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; color: var(--accent-primary);">100 %</span>
+                    </div>
+                    <input type="range" id="target_intensity_slider" min="1" max="100" step="1" value="100" style="width: 100%; accent-color: var(--accent-primary); cursor: pointer;">
+                </div>
+
                 <!-- Interactive SVG Line Draw View -->
-                <svg id="dist_svg" width="100%" height="130" viewBox="0 0 400 130" style="background: rgba(10, 15, 30, 0.45); border-radius: 14px; border: 1px solid var(--card-border); margin-top: 1rem; display: none;"></svg>
-
-
+                <svg id="dist_svg" width="100%" height="130" viewBox="0 0 400 130" style="background: rgba(10, 15, 30, 0.45); border-radius: 14px; border: 1px solid var(--card-border); margin-top: 1.25rem; display: none;"></svg>
             </div>
         </div>
 
@@ -469,13 +504,22 @@
 
         // DOM Elements - Panel 2
         const btnDist = document.querySelector('#btn_dist');
-        const distKeyFstopInput = document.querySelector('#dist_key_fstop');
+        const distWattInput = document.querySelector('#dist_watt');
         const distCurrDistInput = document.querySelector('#dist_curr_dist');
+        const distIntensityInput = document.querySelector('#dist_intensity');
+        const distKeyFstopInput = document.querySelector('#dist_key_fstop');
         const distUnitSelect = document.querySelector('#dist_unit');
         const distCurrUnitTag = document.querySelector('#dist_curr_unit_tag');
         const distTargetFstopInput = document.querySelector('#dist_target_fstop');
         const distResultEl = document.querySelector('#dist_result');
         const distChangeEl = document.querySelector('#dist_change');
+
+        // Target Sliders Elements
+        const targetAdjusters = document.querySelector('#target_adjusters');
+        const targetWattSlider = document.querySelector('#target_watt_slider');
+        const targetWattVal = document.querySelector('#target_watt_val');
+        const targetIntensitySlider = document.querySelector('#target_intensity_slider');
+        const targetIntensityVal = document.querySelector('#target_intensity_val');
 
         // Automatically sync Key input to Distance Key input for convenience
         keyInput.addEventListener('input', (e) => {
@@ -525,30 +569,73 @@
             }
         });
 
-        // Calculation: Light Source Distance (Inverse Square Law)
+        // Calculation: Light Source Distance (Inverse Square Law with Wattage & Intensity scaling)
         btnDist.addEventListener('click', () => {
-            const currentF = parseFloat(distKeyFstopInput.value || keyInput.value);
+            const currentW = parseFloat(distWattInput.value);
             const currentD = parseFloat(distCurrDistInput.value);
+            const currentP = parseFloat(distIntensityInput.value);
+            const currentF = parseFloat(distKeyFstopInput.value || keyInput.value);
             const targetF = parseFloat(distTargetFstopInput.value);
             const unit = distUnitSelect.value;
 
-            if (isNaN(currentF) || isNaN(currentD) || isNaN(targetF) || currentF <= 0 || currentD <= 0 || targetF <= 0) {
-                alert('Please enter valid positive numbers for F-stops and Current Distance.');
+            if (isNaN(currentW) || isNaN(currentD) || isNaN(currentP) || isNaN(currentF) || isNaN(targetF) ||
+                currentW <= 0 || currentD <= 0 || currentP <= 0 || currentF <= 0 || targetF <= 0) {
+                alert('Please enter valid positive values for all input fields.');
                 return;
             }
 
-            // Inverse square law: d_target = d_current * (f_current / f_target)
-            const targetD = currentD * (currentF / targetF);
+            // Sync sliders with initial input values
+            targetWattSlider.value = currentW;
+            targetWattSlider.max = Math.max(2000, currentW * 2);
+            targetWattVal.textContent = `${currentW} W`;
+            
+            targetIntensitySlider.value = currentP;
+            targetIntensityVal.textContent = `${currentP} %`;
+
+            // Display sliders
+            targetAdjusters.style.display = 'flex';
+
+            // Run calculations
+            updateDistanceCalculation();
+        });
+
+        // Slider interaction binds
+        targetWattSlider.addEventListener('input', (e) => {
+            targetWattVal.textContent = `${e.target.value} W`;
+            updateDistanceCalculation();
+        });
+
+        targetIntensitySlider.addEventListener('input', (e) => {
+            targetIntensityVal.textContent = `${e.target.value} %`;
+            updateDistanceCalculation();
+        });
+
+        // Calculation core function
+        function updateDistanceCalculation() {
+            const currentW = parseFloat(distWattInput.value);
+            const currentD = parseFloat(distCurrDistInput.value);
+            const currentP = parseFloat(distIntensityInput.value);
+            const currentF = parseFloat(distKeyFstopInput.value || keyInput.value);
+            const targetF = parseFloat(distTargetFstopInput.value);
+            const unit = distUnitSelect.value;
+
+            const targetW = parseFloat(targetWattSlider.value);
+            const targetP = parseFloat(targetIntensitySlider.value);
+
+            // Physics model incorporating Wattage and Dimmer:
+            // d_target = d_current * (f_current / f_target) * sqrt((W_target * P_target) / (W_current * P_current))
+            const powerRatio = (targetW * targetP) / (currentW * currentP);
+            const targetD = currentD * (currentF / targetF) * Math.sqrt(powerRatio);
             const diffD = targetD - currentD;
 
-            // Display new distance
+            // Display target distance
             distResultEl.innerHTML = `${targetD.toFixed(2)} ${unit}`;
 
-            // Display physical translation needed
-            if (diffD > 0) {
+            // Display distance translation instructions
+            if (diffD > 0.005) {
                 distChangeEl.innerHTML = `Move light back by <b>${diffD.toFixed(2)} ${unit}</b>`;
                 distChangeEl.style.color = 'var(--warning-color)';
-            } else if (diffD < 0) {
+            } else if (diffD < -0.005) {
                 distChangeEl.innerHTML = `Move light closer by <b>${Math.abs(diffD).toFixed(2)} ${unit}</b>`;
                 distChangeEl.style.color = 'var(--success-color)';
             } else {
@@ -556,9 +643,9 @@
                 distChangeEl.style.color = 'var(--text-secondary)';
             }
 
-            // Render visual interactive diagram
+            // Draw line schematic
             drawDistanceDiagram(currentD, targetD, unit);
-        });
+        }
 
         // SVG Drawing function for the line draw view
         function drawDistanceDiagram(currentD, targetD, unit) {
